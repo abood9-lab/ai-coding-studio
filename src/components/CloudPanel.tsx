@@ -82,7 +82,6 @@ export function CloudPanel({ projectId, status, run }: CloudPanelProps) {
     name: "",
     type: "text",
   });
-  const [link, setLink] = useState({ url: "", key: "" });
 
   const act = useCallback(
     async (action: CloudAction, done?: string) => {
@@ -104,15 +103,34 @@ export function CloudPanel({ projectId, status, run }: CloudPanelProps) {
     [run],
   );
 
+  const connectToSupabase = useCallback(async () => {
+    const supabaseUrl = (import.meta.env["VITE_SUPABASE_URL"] ?? "").trim().replace(/\/+$/, "");
+    const supabaseKey = (import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"] ?? "").trim();
+    if (!supabaseUrl || !supabaseKey) {
+      toast.error("The workspace Supabase connection is not configured");
+      return;
+    }
+    const result = await act(
+      { action: "connectSupabase", supabaseUrl, supabaseKey },
+      "Supabase connected",
+    );
+    if (result) setSection("connection");
+  }, [act]);
+
   const enabled = Boolean(status?.enabled);
   const ownSupabase = status?.backend === "supabase";
   const tables = useMemo(() => status?.tables ?? [], [status]);
   const table = tables.find((item) => item.name === selected) ?? tables[0];
   const tableName = table?.name ?? "";
-
-  useEffect(() => {
-    if (status?.supabaseUrl) setLink((current) => ({ ...current, url: status.supabaseUrl }));
-  }, [status?.supabaseUrl]);
+  const connectedSupabaseUrl = ownSupabase
+    ? status?.supabaseUrl
+    : import.meta.env["VITE_SUPABASE_URL"];
+  const supabaseProjectRef = /^https:\/\/([a-z0-9]+)\.supabase\.co\/?$/.exec(
+    connectedSupabaseUrl ?? "",
+  )?.[1];
+  const supabaseDashboardUrl = supabaseProjectRef
+    ? `https://supabase.com/dashboard/project/${supabaseProjectRef}`
+    : "https://supabase.com/dashboard";
 
   useEffect(() => {
     setDraft(null);
@@ -157,31 +175,34 @@ export function CloudPanel({ projectId, status, run }: CloudPanelProps) {
   if (!enabled) {
     return (
       <div className="thin-scroll flex flex-1 flex-col items-center justify-center overflow-y-auto p-8 text-center">
-        <span className="flex size-14 items-center justify-center rounded-2xl bg-brand-accent-soft text-primary shadow-glow">
-          <Cloud className="size-7" />
+        <span className="flex size-16 items-center justify-center rounded-2xl border border-border bg-background text-success shadow-elevated">
+          <Database className="size-8" />
         </span>
-        <h2 className="mt-5 text-xl font-semibold tracking-tight">Cloud Codzer</h2>
-        <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-          A real backend for this project: a database, user accounts and file storage that your app
-          can use right away. Nothing to install.
+        <h2 className="mt-6 text-xl font-semibold tracking-tight">Connect your app to Supabase</h2>
+        <p className="mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
+          Give your app a production database, user accounts and file storage using the Supabase
+          project connected to your workspace.
         </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <Button
-            disabled={busy}
-            onClick={() => void act({ action: "enable" }, "Cloud Codzer is on")}
-          >
-            {busy ? <Loader2 className="animate-spin" /> : <Cloud />} Turn on Cloud Codzer
-          </Button>
-          <Button
-            variant="outline"
-            disabled={busy}
-            onClick={() =>
-              void act({ action: "enable" }).then((result) => result && setSection("connection"))
-            }
-          >
-            <Plug /> Use my own Supabase
-          </Button>
-        </div>
+        <Button
+          size="lg"
+          className="mt-6 min-w-52"
+          disabled={busy}
+          onClick={() => void connectToSupabase()}
+        >
+          {busy ? <Loader2 className="animate-spin" /> : <Plug />}
+          {busy ? "Connecting…" : "Connect to Supabase"}
+        </Button>
+        <p className="mt-3 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+          <ShieldCheck className="size-3.5 text-success" /> No keys or manual setup needed
+        </p>
+        <button
+          type="button"
+          disabled={busy}
+          className="mt-8 text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+          onClick={() => void act({ action: "enable" }, "Cloud Codzer is on")}
+        >
+          Use built-in Cloud Codzer instead
+        </button>
       </div>
     );
   }
@@ -241,88 +262,94 @@ export function CloudPanel({ projectId, status, run }: CloudPanelProps) {
       </div>
 
       {section === "connection" ? (
-        <div className="thin-scroll flex-1 space-y-3 overflow-y-auto p-4">
-          <div
-            className={`rounded-xl border p-4 ${ownSupabase ? "border-border bg-background" : "border-primary/50 bg-brand-accent-soft/40"}`}
-          >
-            <div className="flex items-center gap-2">
-              <Cloud className="size-4 text-primary" />
-              <h3 className="text-sm font-semibold">Cloud Codzer</h3>
-              {!ownSupabase && (
-                <span className="ml-auto inline-flex items-center gap-1 text-[11px] font-medium text-success">
-                  <Check className="size-3" /> In use
+        <div className="thin-scroll flex-1 overflow-y-auto p-4 sm:p-6">
+          <div className="mx-auto max-w-lg overflow-hidden rounded-2xl border border-border bg-background shadow-sm">
+            <div className={`h-1 ${ownSupabase ? "bg-success" : "bg-brand-accent"}`} />
+            <div className="p-5 sm:p-6">
+              <div className="flex items-start gap-3">
+                <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-secondary text-success">
+                  <Database className="size-5" />
                 </span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="text-base font-semibold">Supabase</h3>
+                    <span
+                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                        ownSupabase
+                          ? "bg-brand-accent-soft text-success"
+                          : "bg-secondary text-muted-foreground"
+                      }`}
+                    >
+                      {ownSupabase && <Check className="size-3" />}
+                      {ownSupabase ? "Connected" : "Ready to connect"}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                    Database, authentication and storage for this app, all through one secure
+                    connection.
+                  </p>
+                </div>
+              </div>
+
+              {supabaseProjectRef && (
+                <div className="mt-5 flex items-center justify-between gap-3 rounded-xl border border-border bg-secondary/40 px-3.5 py-3">
+                  <div className="min-w-0">
+                    <p className="text-[11px] text-muted-foreground">Workspace project</p>
+                    <p className="mt-0.5 truncate font-mono text-xs font-medium" dir="ltr">
+                      {supabaseProjectRef}
+                    </p>
+                  </div>
+                  <a
+                    href={supabaseDashboardUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="Open Supabase dashboard"
+                    className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
+                  >
+                    <ExternalLink className="size-4" />
+                  </a>
+                </div>
               )}
-            </div>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Built-in database, accounts and storage. The AI creates the tables for you.
-            </p>
-            {ownSupabase && (
+
               <Button
-                size="sm"
-                variant="outline"
-                className="mt-3"
+                className="mt-5 w-full"
                 disabled={busy}
-                onClick={() => void act({ action: "useCodzer" }, "Switched to Cloud Codzer")}
+                onClick={() => void connectToSupabase()}
               >
-                Switch to Cloud Codzer
+                {busy ? (
+                  <Loader2 className="animate-spin" />
+                ) : ownSupabase ? (
+                  <RefreshCw />
+                ) : (
+                  <Plug />
+                )}
+                {busy ? "Connecting…" : ownSupabase ? "Reconnect Supabase" : "Connect to Supabase"}
               </Button>
-            )}
-          </div>
-          <form
-            className={`rounded-xl border p-4 ${ownSupabase ? "border-primary/50 bg-brand-accent-soft/40" : "border-border bg-background"}`}
-            onSubmit={(event) => {
-              event.preventDefault();
-              void act(
-                { action: "connectSupabase", supabaseUrl: link.url, supabaseKey: link.key },
-                "Supabase connected",
-              ).then((result) => result && setLink((current) => ({ ...current, key: "" })));
-            }}
-          >
-            <div className="flex items-center gap-2">
-              <Plug className="size-4 text-primary" />
-              <h3 className="text-sm font-semibold">My own Supabase</h3>
-              {ownSupabase && (
-                <span className="ml-auto inline-flex items-center gap-1 text-[11px] font-medium text-success">
-                  <Check className="size-3" /> In use
-                </span>
-              )}
+              <p className="mt-3 flex items-start justify-center gap-1.5 text-center text-[11px] text-muted-foreground">
+                <ShieldCheck className="mt-0.5 size-3.5 shrink-0 text-success" />
+                Your workspace credentials are used automatically. Nothing to copy or paste.
+              </p>
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Keep the data in your Supabase account. Find both values in Supabase under Project
-              Settings → API.
-            </p>
-            <label className="mt-3 block text-[11px] font-medium text-muted-foreground">
-              Project URL
-              <input
-                className={`${field} mt-1 font-mono`}
-                dir="ltr"
-                placeholder="https://abcdefgh.supabase.co"
-                value={link.url}
-                onChange={(event) => setLink({ ...link, url: event.target.value })}
-              />
-            </label>
-            <label className="mt-2 block text-[11px] font-medium text-muted-foreground">
-              Public key (anon / publishable)
-              <input
-                className={`${field} mt-1 font-mono`}
-                dir="ltr"
-                placeholder={
-                  ownSupabase ? "Saved — paste a new key to replace it" : "sb_publishable_…"
-                }
-                value={link.key}
-                onChange={(event) => setLink({ ...link, key: event.target.value })}
-              />
-            </label>
-            <p className="mt-2 flex items-start gap-1.5 text-[11px] text-muted-foreground">
-              <ShieldCheck className="mt-0.5 size-3 shrink-0 text-success" />
-              Only the public key is accepted. Secret and service keys are refused because they
-              would be visible inside your app.
-            </p>
-            <Button size="sm" className="mt-3" disabled={busy || !link.url || !link.key}>
-              {ownSupabase ? "Update connection" : "Connect Supabase"}
+          </div>
+
+          <div className="mx-auto mt-4 flex max-w-lg items-center justify-between gap-3 rounded-xl border border-border bg-secondary/30 px-4 py-3">
+            <div className="flex items-center gap-2.5">
+              <Cloud className="size-4 text-muted-foreground" />
+              <div>
+                <p className="text-xs font-medium">Built-in Cloud Codzer</p>
+                <p className="text-[11px] text-muted-foreground">A lightweight alternative</p>
+              </div>
+            </div>
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={busy || !ownSupabase}
+              onClick={() => void act({ action: "useCodzer" }, "Switched to Cloud Codzer")}
+            >
+              {!ownSupabase ? <Check /> : null}
+              {ownSupabase ? "Use instead" : "In use"}
             </Button>
-          </form>
+          </div>
         </div>
       ) : ownSupabase ? (
         managedElsewhere
