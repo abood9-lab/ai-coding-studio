@@ -296,7 +296,12 @@ export function WorkbenchPanel(props: WorkbenchPanelProps) {
           onOpenSecrets={props.onOpenSecrets}
         />
       ) : tab === "cloud" ? (
-        <CloudPanel projectId={projectId} status={props.cloud} run={props.runCloud} />
+        <CloudPanel
+          projectId={projectId}
+          status={props.cloud}
+          run={props.runCloud}
+          ensureProject={props.ensureProject}
+        />
       ) : fileCount === 0 ? (
         <div className="thin-scroll flex-1 overflow-y-auto p-6">
           <h2 className="text-lg font-semibold tracking-tight">Start with a template</h2>

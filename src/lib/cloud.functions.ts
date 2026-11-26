@@ -20,7 +20,9 @@ const input = z.object({
     "deleteFile",
     "connectSupabase",
     "useCodzer",
+    "linkSupabaseProject",
   ]),
+  projectRef: z.string().regex(/^[a-z0-9]{10,40}$/).optional(),
   tables: z.array(cloudTableSchema).max(30).optional(),
   table: z.string().max(63).optional(),
   id: z.string().uuid().optional(),
@@ -161,6 +163,37 @@ export const cloudAdmin = createServerFn({ method: "POST" })
       const { error } = await db
         .from("cloud_projects")
         .update({ backend: "supabase", supabase_url: url, supabase_key: key })
+        .eq("project_id", project.id);
+      if (error) throw new Error("Could not save the connection");
+    } else if (data.action === "linkSupabaseProject") {
+      if (!data.projectRef) throw new Error("Choose a Supabase project");
+      const { management } = await import("@/lib/supabase-oauth.server");
+      const ref = data.projectRef;
+      const info = await management<{ ref: string; name: string; organization_slug: string }>(
+        context.userId,
+        `/v1/projects/${ref}`,
+      );
+      if (!info) throw new Error("Sign in to Supabase again");
+      const keys =
+        (await management<Array<{ api_key: string | null; type: string | null; name: string }>>(
+          context.userId,
+          `/v1/projects/${ref}/api-keys`,
+        )) ?? [];
+      const key =
+        keys.find((item) => item.type === "publishable")?.api_key ??
+        keys.find((item) => item.name === "anon")?.api_key;
+      if (!key) throw new Error("This project has no public key yet");
+      await ensureEnabled();
+      const { error } = await db
+        .from("cloud_projects")
+        .update({
+          backend: "supabase",
+          supabase_url: `https://${ref}.supabase.co`,
+          supabase_key: key,
+          supabase_project_ref: ref,
+          supabase_project_name: info.name,
+          supabase_organization_slug: info.organization_slug,
+        })
         .eq("project_id", project.id);
       if (error) throw new Error("Could not save the connection");
     } else if (data.action === "useCodzer") {

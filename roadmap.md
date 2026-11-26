@@ -22,4 +22,6 @@
 # Lovable import
 - [x] Connected to the user's own Supabase (tables already present).
 - [x] Fix with AI button in the preview console.
+- [x] Connect Supabase via Supabase sign-in, then pick organization and project.
+- [ ] Supabase OAuth App credentials — waiting for the user to create the OAuth App.
 - [ ] Terminal (Daytona) — waiting for the user to connect Daytona.

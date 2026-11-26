@@ -19,6 +19,7 @@ import { Route as ChatIndexRouteImport } from './routes/chat.index'
 import { Route as ChatIdRouteImport } from './routes/chat.$id'
 import { Route as ApiAdminStorageRouteImport } from './routes/api/admin/storage'
 import { Route as ApiPublicCloudProjectIdRouteImport } from './routes/api/public/cloud.$projectId'
+import { Route as ApiPublicSupabaseOauthReturnRouteImport } from './routes/api/public/supabase-oauth.return'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -70,6 +71,12 @@ const ApiPublicCloudProjectIdRoute = ApiPublicCloudProjectIdRouteImport.update({
   path: '/api/public/cloud/$projectId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicSupabaseOauthReturnRoute =
+  ApiPublicSupabaseOauthReturnRouteImport.update({
+    id: '/api/public/supabase-oauth/return',
+    path: '/api/public/supabase-oauth/return',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -82,6 +89,7 @@ export interface FileRoutesByFullPath {
   '/chat/': typeof ChatIndexRoute
   '/api/admin/storage': typeof ApiAdminStorageRoute
   '/api/public/cloud/$projectId': typeof ApiPublicCloudProjectIdRoute
+  '/api/public/supabase-oauth/return': typeof ApiPublicSupabaseOauthReturnRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -94,6 +102,7 @@ export interface FileRoutesByTo {
   '/chat': typeof ChatIndexRoute
   '/api/admin/storage': typeof ApiAdminStorageRoute
   '/api/public/cloud/$projectId': typeof ApiPublicCloudProjectIdRoute
+  '/api/public/supabase-oauth/return': typeof ApiPublicSupabaseOauthReturnRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -107,6 +116,7 @@ export interface FileRoutesById {
   '/chat/': typeof ChatIndexRoute
   '/api/admin/storage': typeof ApiAdminStorageRoute
   '/api/public/cloud/$projectId': typeof ApiPublicCloudProjectIdRoute
+  '/api/public/supabase-oauth/return': typeof ApiPublicSupabaseOauthReturnRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -121,6 +131,7 @@ export interface FileRouteTypes {
     | '/chat/'
     | '/api/admin/storage'
     | '/api/public/cloud/$projectId'
+    | '/api/public/supabase-oauth/return'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -133,6 +144,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/api/admin/storage'
     | '/api/public/cloud/$projectId'
+    | '/api/public/supabase-oauth/return'
   id:
     | '__root__'
     | '/'
@@ -145,6 +157,7 @@ export interface FileRouteTypes {
     | '/chat/'
     | '/api/admin/storage'
     | '/api/public/cloud/$projectId'
+    | '/api/public/supabase-oauth/return'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -158,6 +171,7 @@ export interface RootRouteChildren {
   ChatIndexRoute: typeof ChatIndexRoute
   ApiAdminStorageRoute: typeof ApiAdminStorageRoute
   ApiPublicCloudProjectIdRoute: typeof ApiPublicCloudProjectIdRoute
+  ApiPublicSupabaseOauthReturnRoute: typeof ApiPublicSupabaseOauthReturnRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -232,6 +246,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCloudProjectIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/supabase-oauth/return': {
+      id: '/api/public/supabase-oauth/return'
+      path: '/api/public/supabase-oauth/return'
+      fullPath: '/api/public/supabase-oauth/return'
+      preLoaderRoute: typeof ApiPublicSupabaseOauthReturnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -246,6 +267,7 @@ const rootRouteChildren: RootRouteChildren = {
   ChatIndexRoute: ChatIndexRoute,
   ApiAdminStorageRoute: ApiAdminStorageRoute,
   ApiPublicCloudProjectIdRoute: ApiPublicCloudProjectIdRoute,
+  ApiPublicSupabaseOauthReturnRoute: ApiPublicSupabaseOauthReturnRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

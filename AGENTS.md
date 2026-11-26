@@ -30,3 +30,5 @@ use the editor.
 <!-- LOVABLE:END -->
 - The app runs on the user's own connected Supabase project, not Lovable Cloud, by the user's choice.
 - Preview runtime errors are sent to the AI via the console's Fix with AI button, so repair stays one click.
+
+- Supabase account linking uses Supabase Management OAuth (PKCE) with tokens encrypted server-side in supabase_oauth_connections; why: users pick org/project without pasting keys.

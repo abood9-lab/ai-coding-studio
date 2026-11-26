@@ -9,7 +9,6 @@ import {
   Plug,
   Plus,
   RefreshCw,
-  ShieldCheck,
   Table2,
   Trash2,
   Users,
@@ -17,6 +16,7 @@ import {
 import { confirmDialog, promptDialog } from "@/components/AppDialogs";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { SupabaseConnect } from "@/components/SupabaseConnect";
 import {
   CLOUD_ACCESS,
   CLOUD_COLUMN_TYPES,
@@ -33,6 +33,7 @@ interface CloudPanelProps {
   projectId: string;
   status: CloudStatus | null;
   run: (action: CloudAction) => Promise<CloudResult>;
+  ensureProject: () => Promise<string>;
 }
 
 const ACCESS_LABEL: Record<CloudAccess, string> = {
@@ -70,7 +71,7 @@ function parseValue(type: ColumnType, text: string): unknown {
   return text;
 }
 
-export function CloudPanel({ projectId, status, run }: CloudPanelProps) {
+export function CloudPanel({ projectId, status, run, ensureProject }: CloudPanelProps) {
   const [section, setSection] = useState<Section>("database");
   const [busy, setBusy] = useState(false);
   const [selected, setSelected] = useState("");
@@ -103,28 +104,34 @@ export function CloudPanel({ projectId, status, run }: CloudPanelProps) {
     [run],
   );
 
-  const connectToSupabase = useCallback(async () => {
-    const supabaseUrl = (import.meta.env["VITE_SUPABASE_URL"] ?? "").trim().replace(/\/+$/, "");
-    const supabaseKey = (import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"] ?? "").trim();
-    if (!supabaseUrl || !supabaseKey) {
-      toast.error("The workspace Supabase connection is not configured");
-      return;
-    }
-    const result = await act(
-      { action: "connectSupabase", supabaseUrl, supabaseKey },
-      "Supabase connected",
-    );
-    if (result) setSection("connection");
-  }, [act]);
+  const linkProject = useCallback(
+    async (projectRef: string) => {
+      const result = await act(
+        { action: "linkSupabaseProject", projectRef },
+        "Supabase project connected",
+      );
+      if (result) setSection("connection");
+    },
+    [act],
+  );
+  const connect = (
+    <SupabaseConnect
+      ensureProject={ensureProject}
+      connectedRef={
+        status?.backend === "supabase"
+          ? (/^https:\/\/([a-z0-9]+)\.supabase\.co/.exec(status.supabaseUrl)?.[1] ?? "")
+          : ""
+      }
+      onLink={linkProject}
+    />
+  );
 
   const enabled = Boolean(status?.enabled);
   const ownSupabase = status?.backend === "supabase";
   const tables = useMemo(() => status?.tables ?? [], [status]);
   const table = tables.find((item) => item.name === selected) ?? tables[0];
   const tableName = table?.name ?? "";
-  const connectedSupabaseUrl = ownSupabase
-    ? status?.supabaseUrl
-    : import.meta.env["VITE_SUPABASE_URL"];
+  const connectedSupabaseUrl = ownSupabase ? status?.supabaseUrl : "";
   const supabaseProjectRef = /^https:\/\/([a-z0-9]+)\.supabase\.co\/?$/.exec(
     connectedSupabaseUrl ?? "",
   )?.[1];
@@ -180,21 +187,10 @@ export function CloudPanel({ projectId, status, run }: CloudPanelProps) {
         </span>
         <h2 className="mt-6 text-xl font-semibold tracking-tight">Connect your app to Supabase</h2>
         <p className="mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
-          Give your app a production database, user accounts and file storage using the Supabase
-          project connected to your workspace.
+          Sign in with your Supabase account, pick an organization and a project, and your app gets
+          a production database, user accounts and file storage.
         </p>
-        <Button
-          size="lg"
-          className="mt-6 min-w-52"
-          disabled={busy}
-          onClick={() => void connectToSupabase()}
-        >
-          {busy ? <Loader2 className="animate-spin" /> : <Plug />}
-          {busy ? "Connecting…" : "Connect to Supabase"}
-        </Button>
-        <p className="mt-3 flex items-center gap-1.5 text-[11px] text-muted-foreground">
-          <ShieldCheck className="size-3.5 text-success" /> No keys or manual setup needed
-        </p>
+        <div className="mt-6 w-full max-w-xs">{connect}</div>
         <button
           type="button"
           disabled={busy}
@@ -294,7 +290,7 @@ export function CloudPanel({ projectId, status, run }: CloudPanelProps) {
               {supabaseProjectRef && (
                 <div className="mt-5 flex items-center justify-between gap-3 rounded-xl border border-border bg-secondary/40 px-3.5 py-3">
                   <div className="min-w-0">
-                    <p className="text-[11px] text-muted-foreground">Workspace project</p>
+                    <p className="text-[11px] text-muted-foreground">Connected project</p>
                     <p className="mt-0.5 truncate font-mono text-xs font-medium" dir="ltr">
                       {supabaseProjectRef}
                     </p>
@@ -311,24 +307,7 @@ export function CloudPanel({ projectId, status, run }: CloudPanelProps) {
                 </div>
               )}
 
-              <Button
-                className="mt-5 w-full"
-                disabled={busy}
-                onClick={() => void connectToSupabase()}
-              >
-                {busy ? (
-                  <Loader2 className="animate-spin" />
-                ) : ownSupabase ? (
-                  <RefreshCw />
-                ) : (
-                  <Plug />
-                )}
-                {busy ? "Connecting…" : ownSupabase ? "Reconnect Supabase" : "Connect to Supabase"}
-              </Button>
-              <p className="mt-3 flex items-start justify-center gap-1.5 text-center text-[11px] text-muted-foreground">
-                <ShieldCheck className="mt-0.5 size-3.5 shrink-0 text-success" />
-                Your workspace credentials are used automatically. Nothing to copy or paste.
-              </p>
+              <div className="mt-5">{connect}</div>
             </div>
           </div>
 

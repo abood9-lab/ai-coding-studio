@@ -106,6 +106,9 @@ export type Database = {
           owner_id: string
           project_id: string
           supabase_key: string | null
+          supabase_organization_slug: string | null
+          supabase_project_name: string | null
+          supabase_project_ref: string | null
           supabase_url: string | null
           updated_at: string
         }
@@ -116,6 +119,9 @@ export type Database = {
           owner_id: string
           project_id: string
           supabase_key?: string | null
+          supabase_organization_slug?: string | null
+          supabase_project_name?: string | null
+          supabase_project_ref?: string | null
           supabase_url?: string | null
           updated_at?: string
         }
@@ -126,6 +132,9 @@ export type Database = {
           owner_id?: string
           project_id?: string
           supabase_key?: string | null
+          supabase_organization_slug?: string | null
+          supabase_project_name?: string | null
+          supabase_project_ref?: string | null
           supabase_url?: string | null
           updated_at?: string
         }
@@ -476,6 +485,71 @@ export type Database = {
           volume_subpath?: string
         }
         Relationships: []
+      }
+      supabase_oauth_connections: {
+        Row: {
+          access_token_ciphertext: string
+          created_at: string
+          expires_at: string
+          refresh_token_ciphertext: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token_ciphertext: string
+          created_at?: string
+          expires_at: string
+          refresh_token_ciphertext: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token_ciphertext?: string
+          created_at?: string
+          expires_at?: string
+          refresh_token_ciphertext?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      supabase_oauth_states: {
+        Row: {
+          code_verifier_ciphertext: string
+          created_at: string
+          expires_at: string
+          project_id: string
+          redirect_uri: string
+          state_hash: string
+          user_id: string
+        }
+        Insert: {
+          code_verifier_ciphertext: string
+          created_at?: string
+          expires_at: string
+          project_id: string
+          redirect_uri: string
+          state_hash: string
+          user_id: string
+        }
+        Update: {
+          code_verifier_ciphertext?: string
+          created_at?: string
+          expires_at?: string
+          project_id?: string
+          redirect_uri?: string
+          state_hash?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supabase_oauth_states_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
