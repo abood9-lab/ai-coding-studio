@@ -12,13 +12,13 @@ const sha = async (text: string) =>
   b64url(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text))));
 
 function credentials() {
-  const id = process.env["SB_OAUTH_CLIENT_ID"];
-  const secret = process.env["SB_OAUTH_CLIENT_SECRET"];
+  const id = process.env["SBOAUTH_CLIENT_ID"];
+  const secret = process.env["SBOAUTH_CLIENT_SECRET"];
   if (!id || !secret) throw new Error("Supabase sign-in is not set up yet");
   return { id, secret };
 }
 export const oauthConfigured = () =>
-  Boolean(process.env["SB_OAUTH_CLIENT_ID"] && process.env["SB_OAUTH_CLIENT_SECRET"]);
+  Boolean(process.env["SBOAUTH_CLIENT_ID"] && process.env["SBOAUTH_CLIENT_SECRET"]);
 
 export async function startOAuth(userId: string, projectId: string, redirectUri: string) {
   const { id } = credentials();
