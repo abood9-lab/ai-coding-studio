@@ -38,10 +38,13 @@ export function PreviewFrame({
   files,
   building,
   cloud,
+  onFixErrors,
 }: {
   files: Record<string, WorkspaceFile>;
   building: boolean;
   cloud: PreviewCloud | null;
+  /** Sends the preview's runtime errors to the AI so it can repair the app. */
+  onFixErrors?: (report: string) => void;
 }) {
   const cloudRef = useRef(cloud);
   cloudRef.current = cloud;
@@ -332,6 +335,24 @@ export function PreviewFrame({
             <span className="font-mono text-[11px] text-terminal-muted">
               console · {logs.length} message{logs.length === 1 ? "" : "s"}
             </span>
+            {onFixErrors && logs.some((e) => e.level === "error") && (
+              <button
+                type="button"
+                disabled={building}
+                className="ms-auto me-2 inline-flex items-center gap-1 rounded bg-primary px-2 py-0.5 text-[11px] font-medium text-primary-foreground disabled:opacity-50"
+                onClick={() =>
+                  onFixErrors(
+                    logs
+                      .filter((e) => e.level === "error")
+                      .slice(-10)
+                      .map((e) => e.text)
+                      .join("\n"),
+                  )
+                }
+              >
+                Fix with AI
+              </button>
+            )}
             <button
               type="button"
               aria-label="Clear console"

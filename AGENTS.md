@@ -28,3 +28,5 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+- The app runs on the user's own connected Supabase project, not Lovable Cloud, by the user's choice.
+- Preview runtime errors are sent to the AI via the console's Fix with AI button, so repair stays one click.

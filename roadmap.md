@@ -18,3 +18,8 @@
 - [x] Let a user connect their own Supabase to a project instead of Cloud Codzer.
 - [ ] Cloud Codzer in downloaded ZIP apps (today the `codzer` client works inside the workbench preview only).
 - [ ] Server-side functions for built apps (private API calls with project keys from the app itself).
+
+# Lovable import
+- [x] Connected to the user's own Supabase (tables already present).
+- [x] Fix with AI button in the preview console.
+- [ ] Terminal (Daytona) — waiting for the user to connect Daytona.

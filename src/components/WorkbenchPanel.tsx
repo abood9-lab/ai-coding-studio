@@ -56,6 +56,7 @@ interface WorkbenchPanelProps {
   previewCloud: PreviewCloud | null;
   runCloud: (action: CloudAction) => Promise<CloudResult>;
   onClose: () => void;
+  onFixErrors?: (report: string) => void;
 }
 
 const TABS: Array<{ id: WorkbenchTab; label: string; icon: typeof Eye }> = [
@@ -326,7 +327,9 @@ export function WorkbenchPanel(props: WorkbenchPanelProps) {
           </div>
         </div>
       ) : tab === "preview" ? (
-        <PreviewFrame files={files} building={streaming} cloud={props.previewCloud} />
+        <PreviewFrame files={files} building={streaming} cloud={props.previewCloud}
+          {...(props.onFixErrors ? { onFixErrors: props.onFixErrors } : {})}
+        />
       ) : (
         <CodeView
           files={shownFiles}

@@ -1148,6 +1148,12 @@ export function ChatWorkspace({
           {workbenchOpen && (
             <div className="fixed inset-x-0 bottom-0 top-14 z-30 bg-background lg:static lg:z-auto lg:w-[56%] lg:shrink-0">
               <WorkbenchPanel
+                onFixErrors={(report) =>
+                  void sendMessage(
+                    `The preview shows these runtime errors. Find the cause and fix the files:\n\n${report}`,
+                    "build",
+                  )
+                }
                 files={files}
                 liveFiles={live?.files ?? null}
                 livePath={live?.path ?? ""}
