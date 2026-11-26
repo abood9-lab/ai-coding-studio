@@ -1061,7 +1061,7 @@ export function ChatWorkspace({
                         ? "Describe your idea — I will ask a few questions, then write a plan"
                         : "Describe what to build or change…"
                     }
-                    className="max-h-48 w-full resize-none bg-transparent px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+                    className="max-h-56 min-h-14 w-full resize-none bg-transparent px-3 py-2.5 text-[15px] leading-relaxed text-foreground placeholder:text-muted-foreground focus:outline-none"
                   />
                   <div className="flex flex-wrap items-center justify-between gap-2 px-1 pt-1">
                     <div className="flex items-center gap-1.5">

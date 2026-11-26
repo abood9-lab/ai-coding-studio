@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/BrandLogo";
+import { BuildDemo } from "@/components/auth/BuildDemo";
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -286,28 +287,7 @@ function AuthPage() {
           <h2 className="text-4xl font-bold leading-[1.1] tracking-tight text-foreground">
             Describe it. <span className="text-gradient">Watch it get built.</span>
           </h2>
-          <div className="overflow-hidden rounded-xl border border-terminal-border bg-terminal font-mono text-xs leading-6 text-terminal-foreground shadow-elevated">
-            <div className="flex items-center gap-1.5 border-b border-terminal-border px-3 py-2">
-              <span className="size-2.5 rounded-full bg-terminal-danger" />
-              <span className="size-2.5 rounded-full bg-warning" />
-              <span className="size-2.5 rounded-full bg-terminal-accent" />
-              <span className="ml-2 text-terminal-muted">sandbox — workspace</span>
-            </div>
-            <div className="p-4">
-              <p>
-                <span className="text-terminal-accent">~/workspace $</span> npm install
-              </p>
-              <p className="text-terminal-muted">added 142 packages in 4s</p>
-              <p>
-                <span className="text-terminal-accent">~/workspace $</span> node server.js
-              </p>
-              <p className="text-terminal-muted">listening on :3000</p>
-              <p>
-                <span className="text-terminal-accent">~/workspace $</span>{" "}
-                <span className="live-caret" />
-              </p>
-            </div>
-          </div>
+          <BuildDemo />
           <p className="text-sm leading-relaxed text-muted-foreground">
             Live code as the AI writes it, an instant preview, a real cloud terminal, and guided
             planning before a single line is written.
